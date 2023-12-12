@@ -1,0 +1,16 @@
+# django
+django==4.2.7
+# mysql
+mysqlclient==2.2.0
+# redis
+django-redis==5.4.0
+redis==5.0.1
+# gunicorn
+gunicorn==21.2.0
+# djangorestframework
+djangorestframework==3.14.0
+# django-cors-headers
+django-cors-headers==4.3.1
+
+
+

@@ -1,0 +1,98 @@
+version: "3"
+
+volumes:
+  db_vol:
+  redis_vol:
+  media_vol: #定义数据卷同步存放web项目用户上传到media文件夹的数据
+  static_vol: #定义数据卷同步存放web项目static文件夹的数据
+
+networks:
+  db_network:
+    driver: bridge
+  redis_network:
+    driver: bridge
+  nginx_network:
+    driver: bridge
+
+services:
+  redis:
+    image: redis:latest
+    command: redis-server /etc/redis/redis.conf
+    networks:
+      - redis_network
+    volumes:
+      - redis_vol:/data
+      - ./compose/redis/redis.conf:/etc/redis/redis.conf
+    ports:
+      - "6379:6379"
+    restart: always
+
+  db:
+    image: mysql
+    env_file:
+      - ./project/.env
+    networks:
+      - db_network
+    volumes:
+      - db_vol:/var/lib/mysql:rw
+      - ./compose/mysql/conf/my.cnf:/etc/mysql/my.cnf
+      - ./compose/mysql/init:/docker-entrypoint-initdb.d/
+    ports:
+      - "3306:3306"
+    restart: always
+
+  web:
+    build: ./project
+    expose:
+      - "8000"
+    ports:
+      - "8080:8000"
+    volumes:
+      - ./project:/var/www/html/project
+      - static_vol:/var/www/html/project/static
+      - media_vol:/var/www/html/project/media
+    networks:
+      - nginx_network
+      - db_network
+      - redis_network
+    depends_on:
+      - db
+      - redis
+    restart: always
+    tty: true
+    stdin_open: true
+
+
+  myreact:
+    build: ./myreact
+    expose:
+      - "3000"
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./myreact:/myreact
+      - static_vol:/myreact/static
+    networks:
+      - nginx_network
+    restart: always
+    tty: true
+    stdin_open: true
+
+  nginx:
+    build: ./compose/nginx
+    ports:
+      - "8180:80"
+      - "8443:443"
+    expose:
+      - "80"
+    volumes:
+      - ./compose/nginx/nginx.conf:/etc/nginx/conf.d/nginx.conf # 挂载nginx配置文件
+      - static_vol:/usr/share/nginx/html/static # 挂载静态文件
+      - media_vol:/usr/share/nginx/html/media # 挂载用户上传媒体文件
+    networks:
+      - nginx_network
+    depends_on:
+      - web
+      - myreact
+    restart: always
+
