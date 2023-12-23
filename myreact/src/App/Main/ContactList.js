@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useUser } from '../Authentication/UserContext';
 
 const apiUrl = 'http://127.0.0.1:8180/api/';
+const websocketUrl = 'ws://127.0.0.1:8180/ws/contacts/';
 
 const ContactList = () => {
   const navigate = useNavigate();
@@ -14,6 +15,7 @@ const ContactList = () => {
   const [newFriendEmail, setNewFriendEmail] = useState('');
   const [selectedFriend, setSelectedFriend] = useState(null);
   const [showDeletePopup, setShowDeletePopup] = useState(false);
+  const [ws, setWs] = useState(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -97,7 +99,39 @@ const ContactList = () => {
     };
 
     fetchData();
-  }, [user, navigate]);
+
+    // Establish WebSocket connection
+    const socket = new WebSocket(websocketUrl);
+
+    socket.onopen = () => {
+      console.log('WebSocket connection opened');
+    };
+
+    socket.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      const type = data.type;
+
+      if (type === 'friend_request_response') {
+        // Handle friend request response
+        const updatedResponses = responses.map(response =>
+          response.id === data.id ? { ...response, status: data.status } : response
+        );
+        setResponses(updatedResponses);
+      }
+    };
+
+    socket.onclose = () => {
+      console.log('WebSocket connection closed');
+    };
+
+    setWs(socket);
+
+    return () => {
+      socket.close();
+    };
+
+  }, [user, navigate, responses]);
+
 
   const handleAddFriend = () => {
     setShowAddFriendPopup(true);
@@ -151,7 +185,7 @@ const ContactList = () => {
     }
   };
 
-  const handleFriendRequestResponse = async (friend_id, status) => {
+   const handleFriendRequestResponse = async (friend_id, status) => {
     try {
       const response = await fetch(`${apiUrl}respondtofriendrequest/`, {
         method: 'POST',
@@ -159,16 +193,21 @@ const ContactList = () => {
           'Authorization': `Token ${user.token}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({id: friend_id, status: status}),
+        body: JSON.stringify({ id: friend_id, status: status }),
       });
 
       if (response.ok) {
+        ws.send(JSON.stringify({ type: 'friend_request_response', id: friend_id, status }));
       } else {
         console.error('Failed to respond to friend request');
       }
     } catch (error) {
       console.error('Error responding to friend request:', error);
     }
+  };
+
+  const handleContactSelection = (contactUsername) => {
+    navigate('/chatlist', { state: { selectedUsername: contactUsername } });
   };
 
   return (
@@ -197,6 +236,9 @@ const ContactList = () => {
               <p>{contact.email}</p>
               <button onClick={() => handleDeleteFriend(contact)}>
                 Delete Friend
+              </button>
+              <button onClick={() => handleContactSelection(contact.username)}>
+                Open Chat with {contact.username}
               </button>
             </li>
           ))}
