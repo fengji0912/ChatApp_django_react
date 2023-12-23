@@ -1,10 +1,9 @@
 import React from 'react';
 import { Routes, Route } from 'react-router-dom';
-import Sidebar from './Sidebar';
 import ChatList from './ChatList';
 import ContactList from './ContactList';
 import UserProfile from './UserProfile';
-import withAuthentication from '../Authentication/withAuthentication'; // Import the HOC
+import withAuthentication from '../Authentication/withAuthentication';
 
 const AuthenticatedChatList = withAuthentication(ChatList);
 const AuthenticatedContactList = withAuthentication(ContactList);
@@ -17,10 +16,9 @@ const Main = () => {
         <Routes>
           <Route path="/chatlist" element={<AuthenticatedChatList />} />
           <Route path="/contactlist" element={<AuthenticatedContactList />} />
-          <Route path="/userprofile" element={<AuthenticatedUserProfile />} />
+          <Route path="/" element={<AuthenticatedUserProfile />} />
         </Routes>
       </div>
-      <Sidebar />
     </div>
   );
 };

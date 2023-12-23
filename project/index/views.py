@@ -6,6 +6,12 @@ from rest_framework.response import Response
 from django.core.exceptions import ValidationError
 from django.core.validators import validate_email
 from rest_framework.decorators import api_view
+from rest_framework.authtoken.models import Token
+from rest_framework.decorators import permission_classes
+from rest_framework.permissions import IsAuthenticated
+from .models import FriendRequest
+from django.shortcuts import get_object_or_404
+
 
 @csrf_exempt
 @api_view(['POST'])
@@ -33,6 +39,7 @@ def register_user(request):
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=400)
 
+
 @csrf_exempt
 @api_view(['POST'])
 def login_user(request):
@@ -48,23 +55,133 @@ def login_user(request):
     user = authenticate(request, username=username, password=password)
 
     if user is not None:
-        return JsonResponse({'message': 'Login successful'}, status=200)
+        # Generate or get the token
+        token, created = Token.objects.get_or_create(user=user)
+
+        # Include user ID and token in the response
+        user_id = user.id
+        return JsonResponse({'message': 'Login successful', 'user_id': user_id, 'token': token.key}, status=200)
     else:
         return JsonResponse({'error': 'Invalid credentials'}, status=401)
 
+
+@csrf_exempt
 @api_view(['GET'])
-def get_user_data(request, user_id):
+@permission_classes([IsAuthenticated])
+def get_user_data(request):
+    # The user is already authenticated at this point
+    print(request.user)
+    user = request.user
+    # Retrieve user data
+    user_data = {
+        'username': user.username,
+        'email': user.email,
+        'user_id': user.id,
+        # Add other user data fields as needed
+    }
+
+    return Response(user_data)
+
+
+@csrf_exempt
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_contactlist(request):
+    user_id = request.user.id
+
+    existing_requests = FriendRequest.objects.filter(sender_id=user_id) \
+                        | FriendRequest.objects.filter(receiver_id=user_id)
+
+    friend_ids = [existing_request.receiver_id if existing_request.sender_id == user_id \
+                      else existing_request.sender_id for existing_request in existing_requests \
+                  if existing_request.status == 'accepted']
+    friends = User.objects.filter(id__in=friend_ids)
+    contact_list = [{'id': friend.id, 'username': friend.username, 'email': friend.email} \
+                    for friend in friends]
+
+    return Response(contact_list)
+
+
+@csrf_exempt
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_requestlist(request):
+    user_id = request.user.id
+    request_list = []
+    existing_requests = FriendRequest.objects.filter(sender_id=user_id)
+    for existing_request in existing_requests:
+        friend_id = existing_request.receiver_id
+        friend = User.objects.get(id=friend_id)
+        request_list.append({'id': friend.id, 'email': friend.email, 'status': existing_request.status})
+
+    return Response(request_list)
+
+
+@csrf_exempt
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def get_responselist(request):
+    user_id = request.user.id
+    response_list = []
+    existing_requests = FriendRequest.objects.filter(receiver_id=user_id)
+    for existing_request in existing_requests:
+        friend_id = existing_request.sender_id
+        friend = User.objects.get(id=friend_id)
+        response_list.append({'id': friend.id, 'email': friend.email, 'status': existing_request.status})
+
+    return Response(response_list)
+
+
+@csrf_exempt
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def add_friend(request):
+    friend_email = request.data.get('email')
+
     try:
-        # Fetch user data from the database
-        user = User.objects.get(pk=user_id)
-
-        # Return user data in the response
-        user_data = {
-            'id': user.id,
-            'username': user.username,
-            'email': user.email,
-        }
-
-        return Response(user_data, status=200)
+        friend = User.objects.get(email=friend_email)
     except User.DoesNotExist:
-        return JsonResponse({'error': 'User not found'}, status=404)
+        return JsonResponse({'detail': 'User not found with the provided email.'}, status=404)
+
+    FriendRequest.objects.create(sender=request.user, receiver=friend, status='pending')
+
+    return JsonResponse({'detail': 'Friend request sent successfully.'})
+
+
+@csrf_exempt
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def respond_to_friend_request(request):
+    user = request.user
+    friend = request.data.get('id')
+    status = request.data.get('status')
+
+    friend_request = get_object_or_404(FriendRequest, sender=friend, receiver=user, status='pending')
+
+    friend_request.status = status
+    friend_request.save()
+
+    return JsonResponse({'detail': 'Friend request responded successfully.'})
+
+
+@csrf_exempt
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def delete_friend(request):
+    user_id = request.user.id
+    friend = request.data.get('friend')
+    friend_id = friend['id']
+    connection = get_object_or_404(FriendRequest, sender_id=user_id, receiver_id=friend_id)
+    if connection:
+        connection.delete()
+    else:
+        connection = get_object_or_404(FriendRequest, sender_id=friend_id, receiver_id=user_id)
+        connection.delete()
+
+    return JsonResponse({'detail': 'Friend deleted successfully.'})
+
+
+@csrf_exempt
+@api_view(['GET'])
+def get_chatlist(request):
+    return

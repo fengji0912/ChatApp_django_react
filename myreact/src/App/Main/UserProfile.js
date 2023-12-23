@@ -1,25 +1,35 @@
 // UserProfile.js
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { useUser } from '../Authentication/UserContext';
 
 const apiUrl = 'http://127.0.0.1:8180/api/';
 
 const UserProfile = () => {
+  const navigate = useNavigate();
+  const { user } = useUser();
   const [userData, setUserData] = useState(null);
-  const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
-        const response = await fetch(`${apiUrl}UserProfile/`, {
+        // Check if user is logged in
+        if (!(user && user.token)) {
+          console.error('User is not logged in.');
+          navigate('/')
+        }
+        console.log(user.token)
+        const response = await fetch(`${apiUrl}userprofile/`, {
           method: 'GET',
           headers: {
+            'Authorization': `Token ${user.token}`,
             'Content-Type': 'application/json',
           },
-        });
+        })
 
         if (response.ok) {
           const data = await response.json();
-          setUserData(data); // Assuming the response contains user profile data
+          setUserData(data);
         } else {
           console.error('Error fetching user profile:', response.status);
         }
@@ -27,13 +37,9 @@ const UserProfile = () => {
         console.error('Error fetching user profile:', error);
       }
     };
-
+  
     fetchUserProfile();
-  }, []); // Empty dependency array ensures the effect runs once when the component mounts
-
-  const handleTogglePassword = () => {
-    setShowPassword(!showPassword);
-  };
+  }, [user]); 
 
   return (
     <div className="user-profile">
@@ -41,12 +47,6 @@ const UserProfile = () => {
         <>
           <h2>{userData.username}</h2>
           <p>Email: {userData.email}</p>
-          <p>
-            Password: {showPassword ? userData.password : '********'}
-            <button onClick={handleTogglePassword}>
-              {showPassword ? 'Hide' : 'Show'} Password
-            </button>
-          </p>
         </>
       ) : (
         <p>Loading user profile...</p>

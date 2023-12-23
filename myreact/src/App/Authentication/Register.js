@@ -24,7 +24,6 @@ const Register = () => {
         },
         body: JSON.stringify(formData),
       });
-
       if (response.ok) {
         // Registration successful
         console.log('User registered successfully');

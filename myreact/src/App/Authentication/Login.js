@@ -1,22 +1,20 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom'; // useNavigate instead of useHistory
+import { Link } from 'react-router-dom'; 
 import { useUser } from './UserContext';
 
 const apiUrl = 'http://127.0.0.1:8180/api/';
 
 const Login = () => {
-  const navigate = useNavigate(); // React Router's useNavigate hook
+  const { login } = useUser();
   const [formData, setFormData] = useState({
     username: '',
     password: '',
   });
-
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
   const handleLogin = async () => {
-    const { login } = useUser();
     try {
       const response = await fetch(`${apiUrl}login/`, {
         method: 'POST',
@@ -25,12 +23,13 @@ const Login = () => {
         },
         body: JSON.stringify(formData),
       });
-
       if (response.ok) {
         // Login successful
         console.log('User logged in successfully');
-        login({username: formData.username, password: formData.password});
-        navigate('/userprofile'); // Redirect to the main page using useNavigate
+        const responseData = await response.json();
+        let userInfo = {token: responseData.token, user_id: responseData.user_id, username: formData.username, password: formData.password };
+        console.log(userInfo)
+        login(userInfo); // Update the user context
       } else {
         // Login failed
         console.error('Login failed');
