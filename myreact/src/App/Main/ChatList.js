@@ -10,6 +10,7 @@ const ChatList = () => {
   const { user } = useUser();
   const [chatList, setChatList] = useState([]);
   const [selectedUsername, setSelectedUsername] = useState(null);
+  const [selectedId, setSelectedId] = useState(null);
   const [openChat, setOpenChat] = useState(false);
   const location = useLocation();
   const [ws, setWs] = useState(null);
@@ -36,12 +37,13 @@ const ChatList = () => {
           console.error('Error fetching chatlist data');
         }
 
-        const selectedUsernameFromProp = location.props?.selectedUsername;
-
+        const selectedUsernameFromProp = location.state?.selectedUsername;
+        setSelectedId(location.state?.selectedId);
+        console.log(selectedUsernameFromProp)
         if (selectedUsernameFromProp) {
           setSelectedUsername(selectedUsernameFromProp);
-          const isUsernameInChatList = chatList.some(chat => chat.username === selectedUsername);
-
+          console.log(selectedUsername);
+          const isUsernameInChatList = chatList.some(chat => chat.username === selectedUsernameFromProp);
           if (!isUsernameInChatList) {
             try {
               const response = await fetch(`${apiUrl}addchat/`, {
@@ -50,7 +52,7 @@ const ChatList = () => {
                   'Authorization': `Token ${user.token}`,
                   'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ username: selectedUsername }),
+                body: JSON.stringify({selectedId: selectedId, username: selectedUsernameFromProp }),
               });
 
               if (response.ok) {
@@ -97,10 +99,11 @@ const ChatList = () => {
     return () => {
       socket.close();
     };
-  }, [user, chatList, setChatList, location]);
+  }, [user, location]);
 
-  const handleChatSelection = (username) => {
+  const handleChatSelection = (id, username) => {
     setSelectedUsername(username);
+    setSelectedId(id)
     setOpenChat(true);
   };
 
@@ -111,7 +114,7 @@ const ChatList = () => {
         <ul>
           {chatList.map((chat) => (
             <li key={chat.id}>
-              <button onClick={() => handleChatSelection(chat.username)}>
+              <button onClick={() => handleChatSelection(chat.id, chat.username)}>
                 {chat.username}
               </button>
             </li>
@@ -120,7 +123,7 @@ const ChatList = () => {
       </div>
       <div style={{ flex: '1' }}>
         {openChat ? (
-          <ChatWindow selectedUsername={selectedUsername} ws={ws} />
+          <ChatWindow selectedId={selectedId} selectedUsername={selectedUsername} openChat={openChat} setOpenChat={setOpenChat} />
         ) : (
           <p>Select a chat to start chatting</p>
         )}

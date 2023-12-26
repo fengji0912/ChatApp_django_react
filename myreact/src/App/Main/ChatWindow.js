@@ -1,32 +1,54 @@
 // ChatWindow.js
 import React, { useState, useEffect, useRef } from 'react';
+import { useUser } from '../Authentication/UserContext';
 
-const ChatWindow = ({ selectedUsername, ws }) => {
+const apiUrl = 'http://127.0.0.1:8180/api/';
+const websocketUrl = 'ws://127.0.0.1:8180/ws/chats/';
+const ChatWindow = ({selectedId, openChat, selectedUsername, setOpenChat  }) => {
   const [messages, setMessages] = useState([]);
   const [inputMessage, setInputMessage] = useState('');
   const chatWindowRef = useRef(null);
+  const { user } = useUser();
+  const [ws, setWs] = useState(null);
 
+  console.log(selectedId, openChat, selectedUsername)
   useEffect(() => {
     // Add WebSocket message handling for receiving and updating messages
-    if (ws) {
-      ws.onmessage = (event) => {
+    if (selectedId) {
+      const socket = new WebSocket(websocketUrl);
+
+      socket.onopen = () => {
+        console.log('WebSocket connection opened');
+      };
+
+      socket.onmessage = (event) => {
         const data = JSON.parse(event.data);
         const type = data.type;
+        console.log(selectedId)
 
         if (type === 'chat_message') {
-          const newMessage = {
-            sender: data.sender,
+          const updateMessages = messages.map(message =>
+            message.id === data.id ? { ...message,sender: data.sender,
             receiver: data.receiver,
-            message: data.message,
-            timestamp: data.timestamp,
-          };
-
-          setMessages((prevMessages) => [...prevMessages, newMessage]);
+            message_text: data.message_text,
+            timestamp: data.timestamp} : message
+          );
+          setMessages(updateMessages);
+          console.log(messages)
         }
-        // Add handling for other message types if needed
+      };
+
+      socket.onclose = () => {
+        console.log('WebSocket connection closed');
+      };
+
+      setWs(socket);
+
+      return () => {
+        socket.close();
       };
     }
-  }, [ws]);
+  }, [user]);
 
   const handleCloseChat = () => {
     // Close the chat window by setting openChat to false
@@ -34,20 +56,31 @@ const ChatWindow = ({ selectedUsername, ws }) => {
     setOpenChat(false);
   };
 
-  const handleSendMessage = () => {
-    const timestamp = new Date().toISOString();
-    if (inputMessage.trim() !== '') {
-      const messageData = {
-        type: 'send_message',
-        receiver: selectedUsername,
-        message: inputMessage,
-        timestamp: timestamp,
-      };
+  const handleSendMessage = async () => {
+  const timestamp = new Date().toISOString();
+  console.log();
+  if (inputMessage.trim() !== '') {
+    try {
+      const response = await fetch(`${apiUrl}sendmessage/`, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Token ${user.token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ timestamp: timestamp, selectedId: selectedId, Message: inputMessage }),
+      });
 
-      ws.send(JSON.stringify(messageData));
-      setInputMessage('');
+      if (response.ok) {
+        // Add logic here if needed after successfully adding the chat
+      } else {
+        console.error('Error send message:', response.statusText);
+      }
+    } catch (error) {
+      console.error('Error send message:', error);
     }
-  };
+    setInputMessage('');
+  }
+};
 
   return (
     <div className="chat-window">

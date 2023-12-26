@@ -1,5 +1,6 @@
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
+from django.db.models import Q
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework.response import Response
@@ -9,7 +10,7 @@ from rest_framework.decorators import api_view
 from rest_framework.authtoken.models import Token
 from rest_framework.decorators import permission_classes
 from rest_framework.permissions import IsAuthenticated
-from .models import FriendRequest
+from .models import FriendRequest, ChatMessage
 from django.shortcuts import get_object_or_404
 
 
@@ -169,16 +170,22 @@ def respond_to_friend_request(request):
 @permission_classes([IsAuthenticated])
 def delete_friend(request):
     user_id = request.user.id
-    friend = request.data.get('friend')
-    friend_id = friend['id']
-    connection = get_object_or_404(FriendRequest, sender_id=user_id, receiver_id=friend_id)
-    if connection:
-        connection.delete()
-    else:
-        connection = get_object_or_404(FriendRequest, sender_id=friend_id, receiver_id=user_id)
-        connection.delete()
+    friend_id = request.data.get('friend')['id']
 
-    return JsonResponse({'detail': 'Friend deleted successfully.'})
+    try:
+        # 尝试查找用户发送的好友请求
+        connection = FriendRequest.objects.get(sender_id=user_id, receiver_id=friend_id)
+    except FriendRequest.DoesNotExist:
+        try:
+            # 如果没有找到，尝试查找好友发送的好友请求
+            connection = FriendRequest.objects.get(sender_id=friend_id, receiver_id=user_id)
+        except FriendRequest.DoesNotExist:
+            # 如果都没有找到，返回错误响应
+            return JsonResponse({'detail': '好友请求未找到'}, status=404)
+
+    # 如果找到好友请求，删除它
+    connection.delete()
+    return JsonResponse({'detail': '好友删除成功'})
 
 
 @csrf_exempt
@@ -192,7 +199,7 @@ def get_chatlist(request):
 
     chat_ids = [existing_request.receiver_id if existing_request.sender_id == user_id \
                       else existing_request.sender_id for existing_request in existing_requests \
-                  if existing_request.status == 'accepted' and existing_requests.chat_status == 'exist']
+                  if existing_request.status == 'accepted' and existing_request.chat_status == 'exist']
     chats = User.objects.filter(id__in=chat_ids)
     chat_list = [{'id': chat.id, 'username': chat.username, 'email': chat.email} \
                     for chat in chats]
@@ -204,10 +211,14 @@ def get_chatlist(request):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def add_chat(request):
-    chat_username = request.data.get('username')
+    user_id = request.user.id
+    friend_username = request.data.get('username')
+    friend_id= request.data.get('selectedId')
 
     try:
-        chat = FriendRequest.objects.get(username=chat_username)
+        chat = FriendRequest.objects.get(
+            Q(sender_id=user_id, receiver_id=friend_id) | Q(sender_id=friend_id, receiver_id=user_id)
+        )
     except FriendRequest.DoesNotExist:
         return JsonResponse({'detail': 'FriendRequest not found with the provided username.'}, status=404)
 
@@ -215,3 +226,26 @@ def add_chat(request):
     chat.save()
 
     return JsonResponse({'detail': 'add chat successfully.'})
+
+
+@csrf_exempt
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def send_message(request):
+    user_id = request.user.id
+    timestamp = request.data.get('timestamp')
+    friend_id = request.data.get('selectedId')
+    message_text = request.data.get('Message')
+
+    try:
+        message = ChatMessage.objects.create(
+            timestamp=timestamp,
+            receiver_id=friend_id,
+            sender_id=user_id,
+            message_text=message_text
+        )
+        message.save()
+    except ValidationError as e:
+        return JsonResponse({'detail': f'Error creating ChatMessage: {str(e)}'}, status=400)
+
+    return JsonResponse({'detail': 'ChatMessage created successfully.'})

@@ -140,7 +140,7 @@ const ContactList = () => {
       socket.close();
     };
 
-  }, [user, navigate, contacts, requests, responses]);
+  }, [user, websocketUrl]);
 
 
   const handleAddFriend = () => {
@@ -216,8 +216,8 @@ const ContactList = () => {
     }
   };
 
-  const handleContactSelection = (contactUsername) => {
-    navigate('/chatlist', { state: { selectedUsername: contactUsername } });
+  const handleContactSelection = (contactId, contactUsername) => {
+    navigate('/chatlist', { state: { selectedId: contactId, selectedUsername: contactUsername } });
   };
 
   return (
@@ -247,7 +247,7 @@ const ContactList = () => {
               <button onClick={() => handleDeleteFriend(contact)}>
                 Delete Friend
               </button>
-              <button onClick={() => handleContactSelection(contact.username)}>
+              <button onClick={() => handleContactSelection(contact.id, contact.username)}>
                 Open Chat with {contact.username}
               </button>
             </li>

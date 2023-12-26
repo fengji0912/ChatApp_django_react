@@ -42,9 +42,6 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 'type': 'chat_list',
                 'id': data['id'],
                 'username': data['username'],
-                'email': data['email'],
-                'status': data['status'],
-                'chat_status': data['chat_status'],
             }))
 
         if type == 'chat_message':
@@ -55,19 +52,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
                 'id': data['id'],
                 'sender': data['sender'],
                 'receiver': data['receiver'],
-                'message': data['message'],
+                'message_text': data['message_text'],
                 'timestamp': data['timestamp'],
             }))
-
-        if type == 'send_message':
-            # Handle friend request response, you can broadcast it to other connected clients
-            # Update this logic according to your needs
-            await self.send(text_data=json.dumps({
-                'type': 'send_message',
-                'id': data['id'],
-                'receiver': data['receiver'],
-                'message': data['message'],
-                'timestamp': data['timestamp'],
-            }))
-
 
