@@ -19,5 +19,55 @@ class ContactConsumer(AsyncWebsocketConsumer):
             await self.send(text_data=json.dumps({
                 'type': 'friend_request_response',
                 'id': data['id'],
+                'username': data['username'],
+                'email': data['email'],
                 'status': data['status'],
             }))
+
+class ChatConsumer(AsyncWebsocketConsumer):
+    async def connect(self):
+        await self.accept()
+
+    async def disconnect(self, close_code):
+        pass
+
+    async def receive(self, text_data):
+        data = json.loads(text_data)
+        type = data.get('type')
+
+        if type == 'chat_list':
+            # Handle friend request response, you can broadcast it to other connected clients
+            # Update this logic according to your needs
+            await self.send(text_data=json.dumps({
+                'type': 'chat_list',
+                'id': data['id'],
+                'username': data['username'],
+                'email': data['email'],
+                'status': data['status'],
+                'chat_status': data['chat_status'],
+            }))
+
+        if type == 'chat_message':
+            # Handle friend request response, you can broadcast it to other connected clients
+            # Update this logic according to your needs
+            await self.send(text_data=json.dumps({
+                'type': 'chat_message',
+                'id': data['id'],
+                'sender': data['sender'],
+                'receiver': data['receiver'],
+                'message': data['message'],
+                'timestamp': data['timestamp'],
+            }))
+
+        if type == 'send_message':
+            # Handle friend request response, you can broadcast it to other connected clients
+            # Update this logic according to your needs
+            await self.send(text_data=json.dumps({
+                'type': 'send_message',
+                'id': data['id'],
+                'receiver': data['receiver'],
+                'message': data['message'],
+                'timestamp': data['timestamp'],
+            }))
+
+

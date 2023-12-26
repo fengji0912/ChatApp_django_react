@@ -183,5 +183,35 @@ def delete_friend(request):
 
 @csrf_exempt
 @api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def get_chatlist(request):
-    return
+    user_id = request.user.id
+
+    existing_requests = FriendRequest.objects.filter(sender_id=user_id) \
+                        | FriendRequest.objects.filter(receiver_id=user_id)
+
+    chat_ids = [existing_request.receiver_id if existing_request.sender_id == user_id \
+                      else existing_request.sender_id for existing_request in existing_requests \
+                  if existing_request.status == 'accepted' and existing_requests.chat_status == 'exist']
+    chats = User.objects.filter(id__in=chat_ids)
+    chat_list = [{'id': chat.id, 'username': chat.username, 'email': chat.email} \
+                    for chat in chats]
+
+    return Response(chat_list)
+
+
+@csrf_exempt
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def add_chat(request):
+    chat_username = request.data.get('username')
+
+    try:
+        chat = FriendRequest.objects.get(username=chat_username)
+    except FriendRequest.DoesNotExist:
+        return JsonResponse({'detail': 'FriendRequest not found with the provided username.'}, status=404)
+
+    chat.chat_status = 'exist'  # Replace 'your_new_chat_status' with the desired chat status
+    chat.save()
+
+    return JsonResponse({'detail': 'add chat successfully.'})

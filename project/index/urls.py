@@ -4,7 +4,7 @@ from .views import register_user, login_user, \
     get_contactlist, get_requestlist, get_responselist, \
     add_friend, respond_to_friend_request, \
     delete_friend, \
-    get_chatlist
+    get_chatlist, add_chat
 
 urlpatterns = [
     path('register/', register_user, name='register_user'),
@@ -22,4 +22,5 @@ urlpatterns = [
     path('deletefriend/', delete_friend, name='delete_friend'),
 
     path('chatlist/', get_chatlist, name='get_chatlist'),
+    path('addchat/', add_chat, name='add_chat'),
 ]

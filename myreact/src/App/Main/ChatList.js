@@ -12,6 +12,7 @@ const ChatList = () => {
   const [selectedUsername, setSelectedUsername] = useState(null);
   const [openChat, setOpenChat] = useState(false);
   const location = useLocation();
+  const [ws, setWs] = useState(null);
 
   useEffect(() => {
     const fetchChatList = async () => {
@@ -20,13 +21,12 @@ const ChatList = () => {
           console.error('User is not logged in.');
           return;
         }
-
         const response = await fetch(`${apiUrl}chatlist/`, {
-          method: 'GET',
-          headers: {
-            'Authorization': `Token ${user.token}`,
-            'Content-Type': 'application/json',
-          },
+        method: 'GET',
+        headers: {
+          'Authorization': `Token ${user.token}`,
+          'Content-Type': 'application/json',
+        },
         });
 
         if (response.ok) {
@@ -35,36 +35,73 @@ const ChatList = () => {
         } else {
           console.error('Error fetching chatlist data');
         }
+
+        const selectedUsernameFromProp = location.props?.selectedUsername;
+
+        if (selectedUsernameFromProp) {
+          setSelectedUsername(selectedUsernameFromProp);
+          const isUsernameInChatList = chatList.some(chat => chat.username === selectedUsername);
+
+          if (!isUsernameInChatList) {
+            try {
+              const response = await fetch(`${apiUrl}addchat/`, {
+                method: 'POST',
+                headers: {
+                  'Authorization': `Token ${user.token}`,
+                  'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ username: selectedUsername }),
+              });
+
+              if (response.ok) {
+              // Add logic here if needed after successfully adding the chat
+              } else {
+                console.error('Error adding chat:', response.statusText);
+              }
+            } catch (error) {
+              console.error('Error adding chat:', error);
+            }
+          }
+          setOpenChat(true);
+        }
       } catch (error) {
         console.error('Error fetching chatlist data:', error);
       }
+    }
+    fetchChatList();
+
+    const socket = new WebSocket(websocketUrl);
+
+    socket.onopen = () => {
+      console.log('WebSocket connection opened');
     };
 
-    fetchChatList();
-  }, [user]);
+    socket.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      const type = data.type;
 
-  useEffect(() => {
-    const selectedUsername = location.state?.selectedUsername;
+      if (type === 'chat_list') {
+        const updatedChatList = chatList.map(chat =>
+          chat.id === data.id ? { ...chat, username: data.username, email: data.email} : chat
+        );
+        setChatList(updatedChatList);
+      }
+    };
 
-    if (selectedUsername) {
-      handleChatSelection(selectedUsername);
-    }
-  }, [location]);
+    socket.onclose = () => {
+      console.log('WebSocket connection closed');
+    };
+
+    setWs(socket);
+
+    return () => {
+      socket.close();
+    };
+  }, [user, chatList, setChatList, location]);
 
   const handleChatSelection = (username) => {
-    const existingChat = findChatWithContact(selectedUsername);
-
-    if (existingChat) {
-      setSelectedUsername(existingChat);
-    } else {
-      createChat(username);
-    }
-
+    setSelectedUsername(username);
     setOpenChat(true);
-  };
-
-  const findChatWithContact = (username) => {
-    return chatList.find((chat) => chat.username === username);
   };
 
   return (
@@ -75,7 +112,7 @@ const ChatList = () => {
           {chatList.map((chat) => (
             <li key={chat.id}>
               <button onClick={() => handleChatSelection(chat.username)}>
-                Open Chat with {chat.username}
+                {chat.username}
               </button>
             </li>
           ))}

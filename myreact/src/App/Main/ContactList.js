@@ -113,8 +113,18 @@ const ContactList = () => {
 
       if (type === 'friend_request_response') {
         // Handle friend request response
+        const updatedContacts = contacts.map(contact =>
+          contact.id === contact.id ? { ...contact, username:data.username, email:data.email } : contact
+        );
+        setContacts(updatedContacts);
+
+        const updatedRequests = requests.map(request =>
+          request.id === request.id ? { ...request, email:data.email, status: data.status } : request
+        );
+        setRequests(updatedRequests);
+
         const updatedResponses = responses.map(response =>
-          response.id === data.id ? { ...response, status: data.status } : response
+          response.id === data.id ? { ...response, email:data.email, status: data.status } : response
         );
         setResponses(updatedResponses);
       }
@@ -130,7 +140,7 @@ const ContactList = () => {
       socket.close();
     };
 
-  }, [user, navigate, responses]);
+  }, [user, navigate, contacts, requests, responses]);
 
 
   const handleAddFriend = () => {
