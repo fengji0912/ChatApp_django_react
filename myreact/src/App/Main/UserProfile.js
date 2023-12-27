@@ -8,6 +8,7 @@ const apiUrl = 'http://127.0.0.1:8180/api/';
 const UserProfile = () => {
   const navigate = useNavigate();
   const { user } = useUser();
+  const { logout } = useUser();
   const [userData, setUserData] = useState(null);
 
   useEffect(() => {
@@ -39,10 +40,18 @@ const UserProfile = () => {
     };
   
     fetchUserProfile();
-  }, [user]); 
+  }, [user]);
+
+  const handleLogout = () => {
+    // Clear user data and token, and navigate to the login page
+    setUserData(null);
+    logout(userData)
+    navigate('/');
+  };
 
   return (
     <div className="user-profile">
+      <button onClick={handleLogout}>Logout</button>
       {userData ? (
         <>
           <h2>{userData.username}</h2>

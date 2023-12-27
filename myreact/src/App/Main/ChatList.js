@@ -97,7 +97,6 @@ const ChatList = () => {
     setWs(socket);
 
     return () => {
-      socket.close();
     };
   }, [user, location]);
 
@@ -123,7 +122,7 @@ const ChatList = () => {
       </div>
       <div style={{ flex: '1' }}>
         {openChat ? (
-          <ChatWindow selectedId={selectedId} selectedUsername={selectedUsername} openChat={openChat} setOpenChat={setOpenChat} />
+          <ChatWindow ws={ws} selectedId={selectedId} selectedUsername={selectedUsername} openChat={openChat} setOpenChat={setOpenChat} />
         ) : (
           <p>Select a chat to start chatting</p>
         )}

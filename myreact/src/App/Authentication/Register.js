@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom'; // useNavigate instead of useHistory
+import { Link, useNavigate } from 'react-router-dom';
 
 const apiUrl = 'http://127.0.0.1:8180/api/';
 
@@ -25,11 +25,9 @@ const Register = () => {
         body: JSON.stringify(formData),
       });
       if (response.ok) {
-        // Registration successful
         console.log('User registered successfully');
-        navigate('/'); // Redirect to the login page using useNavigate
+        navigate('/');
       } else {
-        // Registration failed
         console.error('Registration failed');
       }
     } catch (error) {

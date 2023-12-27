@@ -208,11 +208,10 @@ def get_chatlist(request):
 
 
 @csrf_exempt
-@api_view(['POST'])
+@api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def add_chat(request):
     user_id = request.user.id
-    friend_username = request.data.get('username')
     friend_id= request.data.get('selectedId')
 
     try:
@@ -226,6 +225,34 @@ def add_chat(request):
     chat.save()
 
     return JsonResponse({'detail': 'add chat successfully.'})
+
+
+@csrf_exempt
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def get_chatmessage(request):
+    user_id = request.user.id
+    friend_id = request.data.get('selectedId')
+
+    sender_chatmessages = ChatMessage.objects.filter(sender_id=user_id, receiver_id=friend_id)
+    receiver_chatmessages = ChatMessage.objects.filter(sender_id=friend_id, receiver_id=user_id)
+
+    # Combine sender and receiver messages and sort by timestamp
+    all_chatmessages = list(sender_chatmessages) + list(receiver_chatmessages)
+    all_chatmessages.sort(key=lambda x: x.timestamp)
+
+    # Create a list of dictionaries to represent each message
+    chatmessage_list = []
+    for chatmessage in all_chatmessages:
+        message_info = {
+            'sender_id': user_id if chatmessage.sender_id == user_id else friend_id,
+            'receiver_id': user_id if chatmessage.receiver_id == user_id else friend_id,
+            'message_text': chatmessage.message_text,
+            'timestamp': chatmessage.timestamp,
+        }
+        chatmessage_list.append(message_info)
+
+    return Response(chatmessage_list)
 
 
 @csrf_exempt
