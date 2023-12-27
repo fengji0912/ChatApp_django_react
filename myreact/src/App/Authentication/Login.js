@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom'; 
 import { useUser } from './UserContext';
+import '../styles/Login.css'
 
 const apiUrl = 'http://127.0.0.1:8180/api/';
 
@@ -24,14 +25,11 @@ const Login = () => {
         body: JSON.stringify(formData),
       });
       if (response.ok) {
-        // Login successful
         console.log('User logged in successfully');
         const responseData = await response.json();
         let userInfo = {token: responseData.token, user_id: responseData.user_id, username: formData.username, password: formData.password };
-        console.log(userInfo)
-        login(userInfo); // Update the user context
+        login(userInfo);
       } else {
-        // Login failed
         console.error('Login failed');
       }
     } catch (error) {

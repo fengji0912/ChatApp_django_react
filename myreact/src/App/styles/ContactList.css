@@ -1,0 +1,57 @@
+/* ContactList.css */
+.contact-list-container {
+  display: flex;
+  gap: 20px;
+}
+
+.contact-list-container > div {
+  flex: 1;
+}
+
+.add-friend-popup,
+.delete-friend-popup {
+  max-width: 300px;
+  margin: auto;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  text-align: center;
+  background-color: #fff;
+}
+
+.add-friend-popup p,
+.delete-friend-popup p {
+  margin: 10px 0;
+}
+
+.add-friend-popup input {
+  width: 100%;
+  padding: 10px;
+  margin: 5px 0 15px;
+  box-sizing: border-box;
+}
+
+.add-friend-popup button,
+.delete-friend-popup button {
+  width: 100%;
+  padding: 10px;
+  margin-top: 10px;
+  cursor: pointer;
+}
+
+.add-friend-popup button:hover,
+.delete-friend-popup button:hover {
+  background-color: #eee;
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+}
+
+li {
+  margin-bottom: 20px;
+}
+
+/* Add more styles based on your design */

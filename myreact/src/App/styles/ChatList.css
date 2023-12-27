@@ -1,0 +1,19 @@
+.chat-list {
+  width: calc(16.6667% - 10px); /* 1/6 of the page width minus some spacing */
+  height: 100%; /* Take up full height inside content-container */
+  background-color: #f0f0f0;
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+li {
+  margin-bottom: 10px;
+}

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../Authentication/UserContext';
+import '../styles/ContactList.css'
 
 const apiUrl = 'http://127.0.0.1:8180/api/';
 const websocketUrl = 'ws://127.0.0.1:8180/ws/contacts/';
@@ -89,7 +90,6 @@ const ContactList = () => {
           }
         };
 
-        // Fetch data when the component mounts
         fetchContactList();
         fetchRequestList();
         fetchResponseList();
@@ -100,7 +100,6 @@ const ContactList = () => {
 
     fetchData();
 
-    // Establish WebSocket connection
     const socket = new WebSocket(websocketUrl);
 
     socket.onopen = () => {
@@ -112,7 +111,6 @@ const ContactList = () => {
       const type = data.type;
 
       if (type === 'friend_request_response') {
-        // Handle friend request response
         const updatedContacts = contacts.map(contact =>
         contact.id === data.id ? { ...contact, username: data.username, email: data.email } : contact
         );

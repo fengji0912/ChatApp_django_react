@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useUser } from '../Authentication/UserContext';
+import '../styles/UserProfile.css'
 
 const apiUrl = 'http://127.0.0.1:8180/api/';
 
@@ -14,7 +15,6 @@ const UserProfile = () => {
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
-        // Check if user is logged in
         if (!(user && user.token)) {
           console.error('User is not logged in.');
           navigate('/')
@@ -43,7 +43,6 @@ const UserProfile = () => {
   }, [user]);
 
   const handleLogout = () => {
-    // Clear user data and token, and navigate to the login page
     setUserData(null);
     logout(userData)
     navigate('/');
@@ -51,15 +50,15 @@ const UserProfile = () => {
 
   return (
     <div className="user-profile">
-      <button onClick={handleLogout}>Logout</button>
       {userData ? (
         <>
-          <h2>{userData.username}</h2>
+          <h2>username: {userData.username}</h2>
           <p>Email: {userData.email}</p>
         </>
       ) : (
         <p>Loading user profile...</p>
       )}
+      <button onClick={handleLogout}>Logout</button>
     </div>
   );
 };

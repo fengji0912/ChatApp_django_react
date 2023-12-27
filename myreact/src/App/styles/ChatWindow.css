@@ -1,0 +1,79 @@
+/* ChatWindow.css */
+
+.chat-window {
+  max-width: 600px;
+  margin: auto;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+}
+
+.header {
+  background-color: #3498db;
+  color: #fff;
+  padding: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.header button {
+  background-color: #e74c3c;
+  color: #fff;
+  padding: 1px; /* Adjusted the padding for the close button */
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.header button:hover {
+  background-color: #c0392b;
+}
+
+.message-display {
+  padding: 10px;
+}
+
+.sent {
+  text-align: right;
+}
+
+.received {
+  text-align: left;
+}
+
+.timestamp {
+  font-size: 12px;
+  color: #888;
+}
+
+.input-area {
+  display: flex;
+  align-items: center;
+  padding: 10px;
+}
+
+.input-area input {
+  flex: 2;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  margin-right: 10px;
+}
+
+.input-area button {
+  flex: 1;
+  background-color: #3498db;
+  color: #fff;
+  padding: 10px;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.input-area button:hover {
+  background-color: #2980b9;
+}
+
+/* Add more styles based on your design */

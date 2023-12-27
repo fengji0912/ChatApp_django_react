@@ -1,6 +1,7 @@
 // ChatWindow.js
 import React, { useState, useEffect, useRef } from 'react';
 import { useUser } from '../Authentication/UserContext';
+import '../styles/ChatWindow.css'
 
 const apiUrl = 'http://127.0.0.1:8180/api/';
 const websocketUrl = 'ws://127.0.0.1:8180/ws/chats/';
@@ -72,8 +73,6 @@ const ChatWindow = ({ws, selectedId, openChat, selectedUsername, setOpenChat }) 
   }, [user, ws]);
 
   const handleCloseChat = () => {
-    // Close the chat window by setting openChat to false
-    // Add any additional cleanup or logic as needed
     setOpenChat(false);
   };
 
@@ -92,7 +91,6 @@ const ChatWindow = ({ws, selectedId, openChat, selectedUsername, setOpenChat }) 
       });
 
       if (response.ok) {
-        // Add logic here if needed after successfully adding the chat
       } else {
         console.error('Error send message:', response.statusText);
       }

@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useUser } from '../Authentication/UserContext';
 import { useLocation } from 'react-router-dom';
 import ChatWindow from './ChatWindow';
+import '../styles/ChatList.css'
 
 const apiUrl = 'http://127.0.0.1:8180/api/';
 const websocketUrl = 'ws://127.0.0.1:8180/ws/chats/';
@@ -39,7 +40,6 @@ const ChatList = () => {
 
         const selectedUsernameFromProp = location.state?.selectedUsername;
         setSelectedId(location.state?.selectedId);
-        console.log(selectedUsernameFromProp)
         if (selectedUsernameFromProp) {
           setSelectedUsername(selectedUsernameFromProp);
           console.log(selectedUsername);
@@ -56,7 +56,6 @@ const ChatList = () => {
               });
 
               if (response.ok) {
-              // Add logic here if needed after successfully adding the chat
               } else {
                 console.error('Error adding chat:', response.statusText);
               }
@@ -97,6 +96,8 @@ const ChatList = () => {
     setWs(socket);
 
     return () => {
+      // Don't close the WebSocket here if it's shared among components
+      // ws.close();
     };
   }, [user, location]);
 
@@ -120,7 +121,7 @@ const ChatList = () => {
           ))}
         </ul>
       </div>
-      <div style={{ flex: '1' }}>
+      <div style={{ flex: '6' }}>
         {openChat ? (
           <ChatWindow ws={ws} selectedId={selectedId} selectedUsername={selectedUsername} openChat={openChat} setOpenChat={setOpenChat} />
         ) : (

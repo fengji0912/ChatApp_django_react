@@ -4,6 +4,7 @@ import ChatList from './ChatList';
 import ContactList from './ContactList';
 import UserProfile from './UserProfile';
 import withAuthentication from '../Authentication/withAuthentication';
+import '../styles/Main.css'
 
 const AuthenticatedChatList = withAuthentication(ChatList);
 const AuthenticatedContactList = withAuthentication(ContactList);

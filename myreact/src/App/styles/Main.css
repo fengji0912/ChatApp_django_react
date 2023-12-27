@@ -1,0 +1,15 @@
+.main-container {
+  width: calc(83.3333% - 20px); /* 5/6 of the page width minus some spacing */
+  height: 92vh; /* Set to 100% of the viewport height */
+  margin-left: calc(16.6667% + 20px); /* Push to the right of the sidebar */
+  margin-top: 0; /* Set the top margin to 0 */
+}
+
+.content-container {
+  width: 100%; /* Take up full width inside main-container */
+  height: 100%; /* Take up full height inside main-container */
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
