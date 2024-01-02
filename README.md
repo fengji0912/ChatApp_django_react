@@ -1,19 +1,29 @@
 # Chat App
-This Project aims to develop an application for online chat.
+# Overview
+This repository contains the source code and configuration files for a chat application built using MySQL as the database, Redis for caching, Django with Gunicorn as the backend server, React for the frontend, and Nginx as the reverse proxy, all orchestrated in Docker containers.
 
-# services
-In order to get a complete function for the app, we need some services and use these in docker:
-  1. mysql
-  2. redis
-  3. django+gunicorn
-  4. react
-  5. nginx
+# Prerequisites
+Make sure you have the following installed on your machine:
+- docker
+- docker-compose
   
-# usage
-Download the project files and open the commandline to get into the project:
+# Getting Started
+1. Clone the repository:
+    $ git clone https://github.com/fengji0912/ChatApp_django_react.git
+    $ cd ChatApp_django_react
 
-$ cd ChatApp_django_react
+2. Build all the services:
+    $ sudo docker-compose build
 
-$ sudo docker-compose build
+3. check if the images are already in the docker:
+    $ sudo docker images
+    
+4. run the application:
+    $ sudo docker-compose up
+    
+5. check if all the services are already running in the docker:
+    $ sudo docker ps
+    
+6. if the app is running well in the docker, then the website "127.0.0.1:8180" can be successfully accessed
 
-$ sudo docker-compose up
+

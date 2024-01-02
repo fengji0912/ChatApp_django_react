@@ -100,7 +100,7 @@ const ChatList = () => {
       // Don't close the WebSocket here if it's shared among components
       // ws.close();
     };
-  }, [user, location]);
+  }, [user, location, websocketUrl]);
 
   const handleChatSelection = (id, username) => {
     setSelectedUsername(username);
