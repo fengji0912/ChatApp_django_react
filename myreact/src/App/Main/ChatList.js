@@ -39,10 +39,11 @@ const ChatList = () => {
         }
 
         const selectedUsernameFromProp = location.state?.selectedUsername;
-        setSelectedId(location.state?.selectedId);
+        const selectedIdFromProp = location.state?.selectedId;
         if (selectedUsernameFromProp) {
           setSelectedUsername(selectedUsernameFromProp);
-          console.log(selectedUsername);
+          setSelectedId(selectedIdFromProp);
+          console.log(selectedUsername, selectedId, selectedIdFromProp, selectedUsernameFromProp);
           const isUsernameInChatList = chatList.some(chat => chat.username === selectedUsernameFromProp);
           if (!isUsernameInChatList) {
             try {
@@ -52,7 +53,7 @@ const ChatList = () => {
                   'Authorization': `Token ${user.token}`,
                   'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({selectedId: selectedId, username: selectedUsernameFromProp }),
+                body: JSON.stringify({selectedId: selectedIdFromProp, username: selectedUsernameFromProp }),
               });
 
               if (response.ok) {

@@ -208,12 +208,12 @@ def get_chatlist(request):
 
 
 @csrf_exempt
-@api_view(['GET'])
+@api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def add_chat(request):
     user_id = request.user.id
     friend_id= request.data.get('selectedId')
-
+    print(user_id, friend_id)
     try:
         chat = FriendRequest.objects.get(
             Q(sender_id=user_id, receiver_id=friend_id) | Q(sender_id=friend_id, receiver_id=user_id)

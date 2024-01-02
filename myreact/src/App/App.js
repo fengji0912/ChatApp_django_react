@@ -7,7 +7,6 @@ import Register from './Authentication/Register';
 import Sidebar from './Main/Sidebar';
 import Main from './Main/Main';
 import { useUser } from './Authentication/UserContext';
-import './styles/App.css';
 
 const App = () => {
   const { user } = useUser();
